@@ -1,4 +1,4 @@
-# places
+# PhotoLocation App
 
 A new Flutter project.
 
