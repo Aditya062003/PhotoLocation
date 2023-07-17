@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:location/location.dart' as loc;
 import 'package:geocoding/geocoding.dart';
 import 'package:places/models/place.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:latlng/latlng.dart';
 
 class InputLocation extends StatefulWidget {
-  const InputLocation({super.key});
+  const InputLocation({super.key, required this.onPickLocation});
 
+  final void Function(PlaceLocation location) onPickLocation;
   @override
   State<StatefulWidget> createState() {
     return _InputLocationState();
@@ -60,7 +59,7 @@ class _InputLocationState extends State<InputLocation> {
     locationData = await location.getLocation();
     final double lat = locationData.latitude!;
     final double lng = locationData.longitude!;
-    if(lat==null || lng == null){
+    if (lat == null || lng == null) {
       return;
     }
     final address = await getAddressFromLatLng(lat, lng);
@@ -74,6 +73,7 @@ class _InputLocationState extends State<InputLocation> {
       );
       _isLoading = false;
     });
+    widget.onPickLocation(_pickedLocation!);
   }
 
   @override
@@ -86,34 +86,16 @@ class _InputLocationState extends State<InputLocation> {
           .titleMedium!
           .copyWith(color: Theme.of(context).colorScheme.onBackground),
     );
-    if (_pickedLocation != null && _pickedLocation!.latitude != null && _pickedLocation!.longitude != null) {
-      previewContent = FlutterMap(
-        options: MapOptions(
-          center: LatLng(_pickedLocation!.latitude!, _pickedLocation!.longitude!),
-          zoom: 13.0,
-        ),
-        layers: [
-          TileLayerOptions(
-            urlTemplate: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            subdomains: ['a', 'b', 'c'],
-          ),
-          MarkerLayerOptions(
-            markers: [
-              Marker(
-                width: 80.0,
-                height: 80.0,
-                point: LatLng(_pickedLocation!.latitude!, _pickedLocation!.longitude!),
-                builder: (ctx) => Container(
-                  child: Icon(
-                    Icons.location_on,
-                    color: Theme.of(context).colorScheme.primary,
-                    size: 45,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+    if (_pickedLocation != null &&
+        _pickedLocation!.latitude != null &&
+        _pickedLocation!.longitude != null) {
+      previewContent = Text(
+        _pickedLocation!.address,
+        textAlign: TextAlign.center,
+        style: Theme.of(context)
+            .textTheme
+            .titleMedium!
+            .copyWith(color: Theme.of(context).colorScheme.onBackground),
       );
     }
     if (_isLoading) {
